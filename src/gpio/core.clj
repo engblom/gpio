@@ -10,6 +10,7 @@
 
 (defn close-port
   "Unexports port."
+  [port]
   (spit "/sys/class/gpio/unexport" (str port)))
 
 (defn set-direction
