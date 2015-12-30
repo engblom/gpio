@@ -9,8 +9,8 @@
   port)
 
 (defn close-port
-  "Unexports port"
-  (spit "/sys/class/gpio/unexport." (str port)))
+  "Unexports port."
+  (spit "/sys/class/gpio/unexport" (str port)))
 
 (defn set-direction
   "Sets the direction of the port. Use :in or :out for direction."
