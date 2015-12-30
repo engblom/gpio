@@ -3,5 +3,4 @@
   :url "https://github.com/engblom/gpio"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 [juxt/dirwatch "0.2.3"]])
+  :dependencies [[org.clojure/clojure "1.7.0"]])
