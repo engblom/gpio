@@ -1,10 +1,71 @@
 # gpio
 
-A simple library for using the GPIO headers on Raspberry Pi computers
+This is a simple library for using the GPIO headers on Raspberry Pi computers in a REPL friendly way.
+
+Most functionality is done, but there surely is room for improvements. Feel free to open an issue if you have suggestions!
 
 ## Usage
 
-This library is not ready for use yet.
+All functions asking for `pin` wants the Broadcom GPIO number.
+
+### Opening a pin for use
+
+````
+(open-pin pin)
+````
+
+As a side effect to this function, the pin number provided will be exported for use. This function will always return the same value as given to it. For example `(open-pin 4)` will export GPIO4 and will also return `4`.
+
+### Setting the direction of a pin
+
+````
+(set-direction pin direction)
+````
+
+The direction is given by either `:in` or `:out`. For example `(set-direction 4 :out)`
+
+### Reading value
+
+````
+(read-value pin)
+````
+
+This function will return `true` if the pin is high and `false` if the pin is low. For example: `(read-value 4)`
+
+### Writing value
+
+````
+(write-value pin value)
+````
+
+The value needs to be either `true` or `false`. For example: `(write-value 4 true)`
+
+### Toggle value
+
+````
+(toggle-value pin)
+````
+
+This function will read the current value of the pin and write the inverted result back to the pin.
+
+### Change input mode
+
+````
+(low-input pin low)
+````
+
+If `low` is set to true, the `(read-value pin)` function will return `true` for low and `false` for high.
+For example: `(low-input 4 true)`
+
+### Blocking while waiting for input
+
+````
+(wait-for-input pin1 pin2 pin3 ...)
+````
+
+Instead of wasting CPU cycles by busy-waiting for an input, you can use this function to block the program from running until one of the supplied pin got rewritten either by an GPIO input or another program modifying the pin. This function will return the `pin` that got first modified.
+
+For example `(wait-for-input 4)` will stop the exectution of the current function until something has been rewriting the value of GPIO4.
 
 ## License
 
