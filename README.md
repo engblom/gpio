@@ -63,7 +63,7 @@ For example: `(low-input 4 true)`
 (wait-for-input pin1 pin2 pin3 ...)
 ````
 
-Instead of wasting CPU cycles by busy-waiting for an input, you can use this function to block the program from running until one of the supplied pin got rewritten either by an GPIO input or another program modifying the pin. This function will return the `pin` that got first modified.
+Instead of wasting CPU cycles by busy-waiting for an input, you can use this function to block the program from running until one of the supplied pins got rewritten either by an GPIO input or another program modifying the pin. This function will return the `pin` that got first modified.
 
 For example `(wait-for-input 4)` will stop the execution of the current function until something has been rewriting the value of GPIO4.
 
