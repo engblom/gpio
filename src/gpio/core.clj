@@ -68,8 +68,8 @@
   "Sets the direction of the pin. Use :in or :out for direction."
   [pin direction]
   (let [file (direction-file pin)]
-  (when (not (writeable? file))
-    (open-pin pin))
+    (when (not (writeable? file))
+      (open-pin pin))
     (if (= direction :in)
       (spit file "in")
       (spit file "out")))
