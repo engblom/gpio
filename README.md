@@ -14,7 +14,7 @@ All functions asking for `pin` wants the Broadcom GPIO number.
 (open-pin pin)
 ````
 
-As a side effect to this function, the pin number provided will be exported for use. This function will always return the same value as given to it. For example `(open-pin 4)` will export GPIO4 and will also return `4`.
+As a side effect to this function, the pin number provided will be exported for use. This function will always return the same value as given to it. For example `(open-pin 4)` will export GPIO4 and will also return `4`. If the pin is already exported, this function will only return the pin.
 
 ### Setting the direction of a pin
 
@@ -22,7 +22,7 @@ As a side effect to this function, the pin number provided will be exported for 
 (set-direction pin direction)
 ````
 
-The direction is given by either `:in` or `:out`. For example `(set-direction 4 :out)`
+The direction is given by either `:in` or `:out`. This function will return the pin number. For example `(set-direction 4 :out)` will set GPIO4 to :out and return 4.
 
 ### Reading value
 
@@ -51,10 +51,10 @@ This function will read the current value of the pin and write the inverted resu
 ### Change input mode
 
 ````
-(low-input pin low)
+(active-low pin value)
 ````
 
-If `low` is set to true, the `(read-value pin)` function will return `true` for low and `false` for high.
+If `value` is set to `true`, the `(read-value pin)` function will return `true` for low inputs and `false` for high inputs.
 For example: `(low-input 4 true)`
 
 ### Blocking while waiting for input
