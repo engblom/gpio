@@ -22,7 +22,7 @@ As a side effect to this function, the pin number provided will be exported for 
 (set-direction pin direction)
 ````
 
-The direction is given by either `:in` or `:out`. This function will return the pin number. For example `(set-direction 4 :out)` will set GPIO4 to :out and return 4.
+The direction is given by either `:in` or `:out`. This function will return the pin number. For example `(set-direction 4 :out)` will set GPIO4 to :out and return 4. If the pin is not already opened, it will get opened before setting the direction.
 
 ### Reading value
 
