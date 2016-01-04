@@ -61,7 +61,7 @@ This function will read the current value of the pin and write the inverted resu
 ````
 
 If `value` is set to `true`, the `(read-value pin)` function will return `true` for low inputs and `false` for high inputs.
-For example: `(low-input 4 true)`
+For example: `(active-low 4 true)`
 
 ### Blocking while waiting for input
 
