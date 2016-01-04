@@ -80,7 +80,7 @@ Instead of wasting CPU cycles by busy-waiting for an input, you can use this fun
 
 For example `(wait-for-input 4)` will stop the execution of the current function until something has been rewriting the value of GPIO4.
 
-`(wait-for-input pin1 pin2 pin3 ...)` will set edge to `:both`, in case it is set to `none`.
+`(wait-for-input pin1 pin2 pin3 ...)` will set edge to `:both`, in case it is set to `:none`.
 
 ````
 (set-edge pin value)
