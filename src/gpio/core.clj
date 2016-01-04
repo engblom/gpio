@@ -64,6 +64,27 @@
     (spit "/sys/class/gpio/unexport" (str pin)))
   pin)
 
+(defn set-edge
+  "Sets the edge of an input pin with one of the following: :both, :rising, :falling and :none"
+  [pin edge]
+  (let [file (edge-file pin)]
+    (case edge
+      :rising (spit file "rising")
+      :falling (spit file "falling")
+      :both (spit file "both")
+      (spit file "none")))
+  pin)
+
+(defn get-edge
+  "Get edge of the pin"
+  [pin]
+  (let [edge (slurp (edge-file pin))]
+    (case edge
+      "rising\n" :rising
+      "falling\n" :falling
+      "both\n" :both
+      :none)))
+
 (defn set-direction
   "Sets the direction of the pin. Use :in or :out for direction."
   [pin direction]
@@ -118,10 +139,12 @@
 (defn wait-for-input
   "Waits until one of the supplied pins has been modified"
   [& pins]
+  ;This function is probably the most uggly thing I have ever written. While this function seems to work in all my tests, I accept better solutions.
   (let [ws (.newWatchService (FileSystems/getDefault))]
     (doseq [pin pins]
       (.register (.toPath (File. (str "/sys/class/gpio/gpio" pin))) ws (into-array (type  StandardWatchEventKinds/ENTRY_CREATE) [StandardWatchEventKinds/ENTRY_MODIFY]))
-      (spit (edge-file pin) "both"))
+      (when (= (get-edge pin) :none)
+        (set-edge pin :both)))
     (loop [change false changed-pin nil]
       (if (= change true)
         (do
