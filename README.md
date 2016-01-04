@@ -46,6 +46,13 @@ This function will return `true` if the pin is high and `false` if the pin is lo
 
 The value needs to be either `true` or `false`. For example: `(write-value 4 true)`
 
+````
+(write-multiple-values pins values)
+````
+
+The `pins` argument need to be a vector of GPIO pins, The `values` argument needs to be a vector of either `true` or `false`. For example: `(write-multiple-values [4 18] [false true])`
+This function is useful when controlling a stepper motor.
+
 ### Toggle value
 
 ````

@@ -88,7 +88,15 @@
   (let [file (value-file pin)]
     (if value
       (spit file "1")
-      (spit file "0"))))
+      (spit file "0")))
+  value)
+
+(defn write-multiple-values
+  "Takes a vector of pins and a vector of value (of true or false)"
+  [pins values]
+  (doseq [[pin value] (map vector pins values)]
+    (write-value pin value))
+  values)
 
 (defn toggle-value
   "Toggle value of a pin"
@@ -104,7 +112,8 @@
   (let [file (active-low-file pin)]
     (if value
       (spit file "1")
-      (spit file "0"))))
+      (spit file "0")))
+  value)
 
 (defn wait-for-input
   "Waits until one of the supplied pins has been modified"
