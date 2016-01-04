@@ -32,6 +32,11 @@
   [pin]
   (str "/sys/class/gpio/gpio" pin "/edge"))
 
+(defn ^:private temperature-sensor-file
+  "Converts sensor ID to corresponding file in under /sys/bus/w1/devices/"
+  [sensor]
+  (str "/sys/bus/w1/devices/" sensor "/w1_slave"))
+
 (defn ^:private writeable?
   "Checks if all supplied files are writable"
   [& files]
@@ -139,7 +144,7 @@
 (defn wait-for-input
   "Waits until one of the supplied pins has been modified"
   [& pins]
-  ;This function is probably the most uggly thing I have ever written. While this function seems to work in all my tests, I accept better solutions.
+  ;This function is probably the most uggly thing I have ever written. While this function seems to work in all my tests, I would accept better solutions, if anyone sends me one.
   (let [ws (.newWatchService (FileSystems/getDefault))]
     (doseq [pin pins]
       (.register (.toPath (File. (str "/sys/class/gpio/gpio" pin))) ws (into-array (type  StandardWatchEventKinds/ENTRY_CREATE) [StandardWatchEventKinds/ENTRY_MODIFY]))
@@ -159,3 +164,29 @@
                               :else (recur (rest events))))]
           (.reset k)
           (recur (not (nil? value-event)) value-event))))))
+
+(defn list-temperature-sensors
+  "Lists DS18B20 sensors connected to the system"
+  []
+  (->> "/sys/bus/w1/devices"
+      (File.)
+      (.listFiles)
+      (seq)
+      (map #(.getName %)) 
+      (filter #(.startsWith % "28"))))
+
+(defn read-temperature
+  "Reads temperature from DS18B20 sensors and returns the temperature in C"
+  [sensor]
+  (let [file (temperature-sensor-file sensor)
+        lines (split (slurp "/sys/bus/w1/devices/28-04146d8243ff/w1_slave") #"\n")]
+    (if (= "YES" (re-find #"YES" (first lines)))
+      (float (/ (Integer/parseInt (re-find #"\d+$" (second lines))) 1000))
+      nil
+      )))
+
+(defn read-temperature-all
+  "Reads the temperature from all connected DS18B20"
+  []
+  (into {} (map (juxt identity read-temperature)) (list-temperature-sensors)))
+    

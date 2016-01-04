@@ -95,6 +95,25 @@ These are the values `(set-edge pin value)` is able to take: `:rising`, `:fallin
 
 This function will return the currently set `edge`.
 
+### Temperature sensors
+The libary is able to list all DS18B20 sensors connected with this function:
+
+````
+(list-temperature-sensors)
+````
+
+Using one `sensor` of the listed sensors you can read the temperature in Celcius:
+
+````
+(read-temperature sensor)
+````
+
+You can also read all the sensors at once:
+
+````
+(read-temperature-all)
+````
+
 ## License
 
 Copyright © 2015 Lars Engblom
