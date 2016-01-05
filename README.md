@@ -8,9 +8,7 @@ Most functionality is done, but there surely is room for improvements. Feel free
 
 If you use leingingen, add gpio as a dependency:
 
-````
-[gpio "0.1.4"]
-````
+[![Clojars Project](https://img.shields.io/clojars/v/gpio.svg)](https://clojars.org/gpio)
 
 All functions asking for `pin` wants the Broadcom GPIO number.
 

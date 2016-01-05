@@ -169,24 +169,25 @@
   "Lists DS18B20 sensors connected to the system"
   []
   (->> "/sys/bus/w1/devices"
-      (File.)
-      (.listFiles)
-      (seq)
-      (map #(.getName %)) 
-      (filter #(.startsWith % "28"))))
+       (File.)
+       (.listFiles)
+       (seq)
+       (map #(.getName %)) 
+       (filter #(.startsWith % "28"))))
 
 (defn read-temperature
   "Reads temperature from DS18B20 sensors and returns the temperature in C"
   [sensor]
-  (let [file (temperature-sensor-file sensor)
-        lines (split (slurp "/sys/bus/w1/devices/28-04146d8243ff/w1_slave") #"\n")]
-    (if (= "YES" (re-find #"YES" (first lines)))
-      (float (/ (Integer/parseInt (re-find #"\d+$" (second lines))) 1000))
-      nil
-      )))
+  (loop []
+    (let [file (temperature-sensor-file sensor)
+          lines (split (slurp "/sys/bus/w1/devices/28-04146d8243ff/w1_slave") #"\n")]
+      (if (= "YES" (re-find #"YES" (first lines)))
+        (float (/ (Integer/parseInt (re-find #"\d+$" (second lines))) 1000))
+        (recur)
+        ))))
 
 (defn read-temperature-all
   "Reads the temperature from all connected DS18B20"
   []
   (into {} (map (juxt identity read-temperature)) (list-temperature-sensors)))
-    
+
