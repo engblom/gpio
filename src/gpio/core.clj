@@ -192,7 +192,7 @@
   (into {} (map (juxt identity read-temperature)) (list-temperature-sensors)))
 
 (defn new-stepper-motor
-  "Returns a motor (a map of all information about the motor) that can be used together with turn-stepper-motor."
+  "Returns a motor (a map of all information about the motor) that can be used together with turn-stepper-motor and inactivate-stepper-motor."
   [stepper-sequence initial-position pins]
   {:sequence stepper-sequence
    :position (ref initial-position)
