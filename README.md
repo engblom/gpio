@@ -114,9 +114,9 @@ You can also read all the sensors at once:
 
 ### Stepper motors
 
-This library is able to control stepper motors as long as you know the stepping sequence. The stepping sequence can be found from manufacturer datasheet of the stepper motor.
+This library is able to control stepper motors as long as you know the stepping sequence. The stepping sequence can usually be found from the  manufacturer datasheet of the stepper motor.
 
-The example below should be pretty much self-explainging
+The example below should be pretty much self-explaining.
 
 ````
 (def byj48-seq [[false false false true]
@@ -133,7 +133,7 @@ The example below should be pretty much self-explainging
 (def motor (new-stepper-motor byj48-seq 0 [12 16 20 21]))
 
 (defn -main
-  "Turn the motor 5000 steps clockwise, the 5000 steps counter-clockwise"
+  "Turn the motor 5000 steps clockwise, then 5000 steps counter-clockwise"
     [& args]
     ; (turn-stepper-motor motor steps time)
     ; Positive number of steps will turn the motor clockwise and 
