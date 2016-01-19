@@ -119,14 +119,15 @@ This library is able to control stepper motors as long as you know the stepping 
 The example below should be pretty much self-explaining.
 
 ````
+; The stepping sequence for 28BYJ-48 stepper motor.
 (def byj48-seq [[false false false true]
                 [false false true true]
-		[false false true false]
-		[false true true false]
-		[false true false false]
-		[true true false false]
-		[true false false false]
-		[true false false true]])
+                [false false true false]
+                [false true true false]
+                [false true false false]
+                [true true false false]
+                [true false false false]
+                [true false false true]])
 
 ; (new-stepper-motor sequence inital-position pins)
 ; The initial position is the position in the sequence you want to start from
