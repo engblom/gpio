@@ -112,6 +112,38 @@ You can also read all the sensors at once:
 (read-temperature-all)
 ````
 
+### Stepper motors
+
+This library is able to control stepper motors as long as you know the stepping sequence. The stepping sequence can be found from manufacturer datasheet of the stepper motor.
+
+The example below should be pretty much self-explainging
+
+````
+(def byj48-seq [[false false false true]
+                [false false true true]
+		[false false true false]
+		[false true true false]
+		[false true false false]
+		[true true false false]
+		[true false false false]
+		[true false false true]])
+
+; (new-stepper-motor sequence inital-position pins)
+; The initial position is the position in the sequence you want to start from
+(def motor (new-stepper-motor byj48-seq 0 [12 16 20 21]))
+
+(defn -main
+  "Turn the motor 5000 steps clockwise, the 5000 steps counter-clockwise"
+    [& args]
+    ; (turn-stepper-motor motor steps time)
+    ; Positive number of steps will turn the motor clockwise and 
+    ; negative number of steps will turn it counter-clockwise.
+    ; The time is in milliseconds the time between each step.
+    (turn-stepper-motor motor1 5000 0.1)
+    (turn-stepper-motor motor1 -5000 0.1))
+
+````
+
 ## License
 
 Copyright © 2015 Lars Engblom

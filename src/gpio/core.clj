@@ -190,3 +190,31 @@
   "Reads the temperature from all connected DS18B20"
   []
   (into {} (map (juxt identity read-temperature)) (list-temperature-sensors)))
+
+(defn new-stepper-motor
+  "Returns a motor (a map of all information about the motor) that can be used together with turn-stepper-motor."
+  [stepper-sequence initial-position pins]
+  {:sequence stepper-sequence
+   :position (ref initial-position)
+   :pins (map #(set-direction % :out) pins)})
+
+(defn inactivate-stepper-motor
+  "Turns off all output to the stepper motor by writing false to all pins"
+  [{pins :pins}]
+  (write-multiple-values pins (map (fn [_] false) pins)))
+
+(defn turn-stepper-motor
+  "Turn the motor as many steps you want. Positive steps move the motor forward and negative steps backwards. The step-time is the time in ms to wait between each step."
+  [{stepper-sequence :sequence position :position pins :pins} steps step-time]
+  (let [forward (pos? steps)]
+    (dosync
+      (dotimes [_ (Math/abs steps)]
+        (let [new-position (mod (if forward
+                                  (inc @position)
+                                  (dec @position))
+                                8)]
+          (write-multiple-values pins (nth stepper-sequence new-position))
+          (ref-set position new-position)
+          (Thread/sleep step-time)))
+      @position)))
+
