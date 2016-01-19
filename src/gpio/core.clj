@@ -190,4 +190,3 @@
   "Reads the temperature from all connected DS18B20"
   []
   (into {} (map (juxt identity read-temperature)) (list-temperature-sensors)))
-

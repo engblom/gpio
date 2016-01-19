@@ -1,6 +1,6 @@
 # gpio
 
-This is a simple library for using the GPIO headers on Raspberry Pi computers in a REPL friendly way.
+This is a simple library for using the GPIO headers on Raspberry Pi computers in a REPL friendly way. Currently it only works on Linux as it is using the /sys/ filesystem. This library is developed on Raspbian Jessie.
 
 Most functionality is done, but there surely is room for improvements. Feel free to open an issue if you have suggestions!
 
