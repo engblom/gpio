@@ -10,7 +10,7 @@ If you use leingingen, add gpio as a dependency:
 
 [![Clojars Project](https://img.shields.io/clojars/v/gpio.svg)](https://clojars.org/gpio)
 
-All functions asking for `pin` wants the Broadcom GPIO number.
+Any functions asking for `pin` wants the Broadcom GPIO number.
 
 ### Opening a pin for use
 
