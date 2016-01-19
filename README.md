@@ -119,7 +119,7 @@ This library is able to control stepper motors as long as you know the stepping 
 The example below should be pretty much self-explaining.
 
 ````
-; The stepping sequence for 28BYJ-48 stepper motor.
+; The stepping sequence for the 28BYJ-48 stepper motor.
 (def byj48-seq [[false false false true]
                 [false false true true]
                 [false false true false]
