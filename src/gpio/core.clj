@@ -212,7 +212,7 @@
         (let [new-position (mod (if forward
                                   (inc @position)
                                   (dec @position))
-                                8)]
+                                (count stepper-sequence))]
           (write-multiple-values pins (nth stepper-sequence new-position))
           (ref-set position new-position)
           (Thread/sleep step-time)))
