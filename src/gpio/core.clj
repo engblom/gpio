@@ -206,13 +206,14 @@
 (defn turn-stepper-motor
   "Turn the motor as many steps you want. Positive steps move the motor forward and negative steps backwards. The step-time is the time in ms to wait between each step."
   [{stepper-sequence :sequence position :position pins :pins} steps step-time]
-  (let [forward (pos? steps)]
+  (let [forward (pos? steps)
+        sequence-lenght (count stepper-sequence)]
     (dosync
       (dotimes [_ (Math/abs steps)]
         (let [new-position (mod (if forward
                                   (inc @position)
                                   (dec @position))
-                                (count stepper-sequence))]
+                                sequence-length)]
           (write-multiple-values pins (nth stepper-sequence new-position))
           (ref-set position new-position)
           (Thread/sleep step-time)))
