@@ -50,11 +50,13 @@
               (direction-file pin)
               (edge-file pin)))
 
-(defn busy-wait [ms]
-  "Busy-wait as many milliseconds as given"
-  (let [stop-time (+ ms (System/currentTimeMillis))]
-    (loop []
-      (when (> stop-time (System/currentTimeMillis)) (recur)))))
+(defn wait [ms]
+  "Wait as many milliseconds as given"
+  (if (< ms 10)
+    (let [stop-time (+ ms (System/currentTimeMillis))]
+      (loop []
+        (when (> stop-time (System/currentTimeMillis)) (recur))))
+    (Thread/sleep ms)))
 
 (defn open-pin 
   "Exports pin for usage and returns the pin number."
@@ -126,7 +128,7 @@
 (defn write-multiple-values
   "Takes a vector of pins and a vector of value (of true or false)"
   [pins values]
-  (map write-value pins values))
+  (seq (map write-value pins values)))
 
 (defn toggle-value
   "Toggle value of a pin"
@@ -200,7 +202,7 @@
   [stepper-sequence initial-position pins]
   {:sequence stepper-sequence
    :position (ref initial-position)
-   :pins (map #(set-direction % :out) pins)})
+   :pins (into [] (map #(set-direction % :out) pins))})
 
 (defn inactivate-stepper-motor
   "Turns off all output to the stepper motor by writing false to all pins"
@@ -220,6 +222,6 @@
                                 sequence-length)]
           (write-multiple-values pins (nth stepper-sequence new-position))
           (ref-set position new-position)
-          (busy-wait step-time)))
+          (wait step-time)))
       @position)))
 
