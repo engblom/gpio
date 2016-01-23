@@ -128,7 +128,8 @@
 (defn write-multiple-values
   "Takes a vector of pins and a vector of value (of true or false)"
   [pins values]
-  (seq (map write-value pins values)))
+  (doall (map write-value pins values))
+  values)
 
 (defn toggle-value
   "Toggle value of a pin"
