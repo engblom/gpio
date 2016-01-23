@@ -50,6 +50,12 @@
               (direction-file pin)
               (edge-file pin)))
 
+(defn busy-wait [ms]
+  "Busy-wait as many milliseconds as given"
+  (let [stop-time (+ ms (System/currentTimeMillis))]
+    (loop []
+      (when (> stop-time (System/currentTimeMillis)) (recur)))))
+
 (defn open-pin 
   "Exports pin for usage and returns the pin number."
   [pin]
@@ -120,9 +126,7 @@
 (defn write-multiple-values
   "Takes a vector of pins and a vector of value (of true or false)"
   [pins values]
-  (doseq [[pin value] (map vector pins values)]
-    (write-value pin value))
-  values)
+  (map write-value pins values))
 
 (defn toggle-value
   "Toggle value of a pin"
@@ -207,7 +211,7 @@
   "Turn the motor as many steps you want. Positive steps move the motor forward and negative steps backwards. The step-time is the time in ms to wait between each step."
   [{stepper-sequence :sequence position :position pins :pins} steps step-time]
   (let [forward (pos? steps)
-        sequence-lenght (count stepper-sequence)]
+        sequence-length (count stepper-sequence)]
     (dosync
       (dotimes [_ (Math/abs steps)]
         (let [new-position (mod (if forward
@@ -216,6 +220,6 @@
                                 sequence-length)]
           (write-multiple-values pins (nth stepper-sequence new-position))
           (ref-set position new-position)
-          (Thread/sleep step-time)))
+          (busy-wait step-time)))
       @position)))
 
