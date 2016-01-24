@@ -4,6 +4,8 @@
   (:require [clojure.string :refer [split]])
   (:gen-class))
 
+(def output-streams (atom {}))
+
 (defn ^:private pin-from-file
   "Converts the full /sys/class/gpio filename for a value file to the corresponding pin number"
   [file-name]
@@ -50,6 +52,22 @@
               (direction-file pin)
               (edge-file pin)))
 
+(defn ^:private create-value-streams
+  "Creates an output-stream for the value file."
+  [pin]
+  (when-not (contains? @output-streams pin)
+    (swap! output-streams assoc pin (clojure.java.io/output-stream (java.io.File. (value-file pin)))))
+  pin)
+
+(defn ^:private destroy-value-streams
+  "If an output-stream do exist for the value file, it will get destroyed from the stream map."
+  [pin]
+  (when (contains? @output-streams pin)
+    (do
+      (.close (get @output-streams pin))
+      (swap! output-streams dissoc pin)))
+  pin)
+
 (defn wait [ms]
   "Wait as many milliseconds as given"
   (if (< ms 10)
@@ -66,13 +84,14 @@
       (spit "/sys/class/gpio/export" (str pin))
       (loop []
         (if (all-files-writeable? pin)
-          pin
+          (create-value-streams pin)
           (recur))))
-    pin))
+    (create-value-streams pin)))
 
 (defn close-pin
   "Unexports pin."
   [pin]
+  (destroy-value-streams pin)
   (when (.exists (File. (str "/sys/class/gpio/gpio" pin)))
     (spit "/sys/class/gpio/unexport" (str pin)))
   pin)
@@ -102,7 +121,7 @@
   "Sets the direction of the pin. Use :in or :out for direction."
   [pin direction]
   (let [file (direction-file pin)]
-    (when (not (writeable? file))
+    (when (or (not (writeable? file)) (not (contains? @output-streams pin)))
       (open-pin pin))
     (if (= direction :in)
       (spit file "in")
@@ -119,10 +138,14 @@
 (defn write-value
   "Converts true to 1 and false to 0 and writes it to the pin."
   [pin value]
-  (let [file (value-file pin)]
+  (let [stream (get @output-streams pin)]
     (if value
-      (spit file "1")
-      (spit file "0")))
+      (do
+         (.write stream (.getBytes "1\n")) 
+         (.flush stream))
+      (do
+         (.write stream (.getBytes "0\n")) 
+         (.flush stream))))
   value)
 
 (defn write-multiple-values

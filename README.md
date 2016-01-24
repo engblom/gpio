@@ -140,8 +140,8 @@ The example below should be pretty much self-explaining.
     ; Positive number of steps will turn the motor clockwise and 
     ; negative number of steps will turn it counter-clockwise.
     ; The time is in milliseconds the time between each step.
-    (turn-stepper-motor motor 5000 1)
-    (turn-stepper-motor motor -5000 1)
+    (turn-stepper-motor motor 5000 2)
+    (turn-stepper-motor motor -5000 2)
     
     ; Put the stepper motor to rest
     (inactivate-stepper-motor motor))
