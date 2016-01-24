@@ -1,4 +1,4 @@
-(defproject gpio "0.2.0-SNAPSHOT"
+(defproject gpio "0.2.0"
   :description "A simple library for using the GPIO headers on Raspberry Pi computers"
   :url "https://github.com/engblom/gpio"
   :license {:name "Eclipse Public License"

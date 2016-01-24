@@ -4,7 +4,8 @@
   (:require [clojure.string :refer [split]])
   (:gen-class))
 
-(def output-streams (atom {}))
+;A vector seem to give a noticable speed boost over a map, so creating a vector with space ready reserved
+(def output-streams (atom (vec (repeat (inc (Integer/parseInt (re-find #"\d+" (slurp "/sys/class/gpio/gpiochip0/ngpio")))) nil))))
 
 (defn ^:private pin-from-file
   "Converts the full /sys/class/gpio filename for a value file to the corresponding pin number"
@@ -52,24 +53,24 @@
               (direction-file pin)
               (edge-file pin)))
 
-(defn ^:private create-value-streams
+(defn ^:private create-value-stream
   "Creates an output-stream for the value file."
   [pin]
-  (when-not (contains? @output-streams pin)
+  (when (nil? (nth @output-streams pin))
     (swap! output-streams assoc pin (clojure.java.io/output-stream (java.io.File. (value-file pin)))))
   pin)
 
-(defn ^:private destroy-value-streams
+(defn ^:private destroy-value-stream
   "If an output-stream do exist for the value file, it will get destroyed from the stream map."
   [pin]
-  (when (contains? @output-streams pin)
-    (do
-      (.close (get @output-streams pin))
-      (swap! output-streams dissoc pin)))
+  (when-not (nil? (nth @output-streams pin))
+    (.close (nth @output-streams pin))
+    (swap! output-streams assoc  pin nil))
   pin)
 
-(defn wait [ms]
+(defn wait 
   "Wait as many milliseconds as given"
+  [ms]
   (if (< ms 10)
     (let [stop-time (+ ms (System/currentTimeMillis))]
       (loop []
@@ -79,19 +80,19 @@
 (defn open-pin 
   "Exports pin for usage and returns the pin number."
   [pin]
-  (if (not (all-files-writeable? pin)) 
+  (if-not (all-files-writeable? pin) 
     (do
       (spit "/sys/class/gpio/export" (str pin))
       (loop []
         (if (all-files-writeable? pin)
-          (create-value-streams pin)
+          (create-value-stream pin)
           (recur))))
-    (create-value-streams pin)))
+    (create-value-stream pin)))
 
 (defn close-pin
   "Unexports pin."
   [pin]
-  (destroy-value-streams pin)
+  (destroy-value-stream pin)
   (when (.exists (File. (str "/sys/class/gpio/gpio" pin)))
     (spit "/sys/class/gpio/unexport" (str pin)))
   pin)
@@ -121,7 +122,7 @@
   "Sets the direction of the pin. Use :in or :out for direction."
   [pin direction]
   (let [file (direction-file pin)]
-    (when (or (not (writeable? file)) (not (contains? @output-streams pin)))
+    (when (or (not (writeable? file)) (nil? (nth @output-streams pin)))
       (open-pin pin))
     (if (= direction :in)
       (spit file "in")
@@ -138,14 +139,11 @@
 (defn write-value
   "Converts true to 1 and false to 0 and writes it to the pin."
   [pin value]
-  (let [stream (get @output-streams pin)]
+  (let [stream (nth @output-streams pin)]
     (if value
-      (do
-         (.write stream (.getBytes "1\n")) 
-         (.flush stream))
-      (do
-         (.write stream (.getBytes "0\n")) 
-         (.flush stream))))
+      (.write stream (.getBytes "1\n")) 
+      (.write stream (.getBytes "0\n"))) 
+    (.flush stream))
   value)
 
 (defn write-multiple-values
@@ -189,8 +187,8 @@
               all-events (.pollEvents k)
               value-event (loop [events all-events]
                             (cond 
-                              (= (count events) 0) nil
-                              (= "value" (.getName (.toFile (.resolve (.watchable k) (.context (first events)))))) (pin-from-file (.getCanonicalPath (.toFile (.resolve (.watchable k) (.context(first events))))))
+                              (zero? (count events)) nil
+                              (= "value" (.getName (.toFile (.resolve (.watchable k) (.context (first events)))))) (pin-from-file (.getCanonicalPath (.toFile (.resolve (.watchable k) (.context (first events))))))
                               :else (recur (rest events))))]
           (.reset k)
           (recur (not (nil? value-event)) value-event))))))
@@ -213,8 +211,7 @@
           lines (split (slurp file) #"\n")]
       (if (= "YES" (re-find #"YES" (first lines)))
         (float (/ (Integer/parseInt (re-find #"\d+$" (second lines))) 1000))
-        (recur)
-        ))))
+        (recur)))))
 
 (defn read-temperature-all
   "Reads the temperature from all connected DS18B20"
@@ -239,13 +236,13 @@
   (let [forward (pos? steps)
         sequence-length (count stepper-sequence)]
     (dosync
-      (dotimes [_ (Math/abs steps)]
-        (let [new-position (mod (if forward
-                                  (inc @position)
-                                  (dec @position))
-                                sequence-length)]
-          (write-multiple-values pins (nth stepper-sequence new-position))
-          (ref-set position new-position)
-          (wait step-time)))
-      @position)))
+     (dotimes [_ (Math/abs steps)]
+       (let [new-position (mod (if forward
+                                 (inc @position)
+                                 (dec @position))
+                               sequence-length)]
+         (write-multiple-values pins (nth stepper-sequence new-position))
+         (ref-set position new-position)
+         (wait step-time)))
+     @position)))
 
