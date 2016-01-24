@@ -187,7 +187,7 @@
   [sensor]
   (loop []
     (let [file (temperature-sensor-file sensor)
-          lines (split (slurp "/sys/bus/w1/devices/28-04146d8243ff/w1_slave") #"\n")]
+          lines (split (slurp file) #"\n")]
       (if (= "YES" (re-find #"YES" (first lines)))
         (float (/ (Integer/parseInt (re-find #"\d+$" (second lines))) 1000))
         (recur)
@@ -203,7 +203,7 @@
   [stepper-sequence initial-position pins]
   {:sequence stepper-sequence
    :position (ref initial-position)
-   :pins (into [] (map #(set-direction % :out) pins))})
+   :pins (mapv #(set-direction % :out) pins)})
 
 (defn inactivate-stepper-motor
   "Turns off all output to the stepper motor by writing false to all pins"
