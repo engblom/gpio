@@ -4,8 +4,9 @@
   (:require [clojure.string :refer [split]])
   (:gen-class))
 
-;A vector seem to give a noticable speed boost over a map, so creating a vector with space ready reserved
-(def output-streams (atom (vec (repeat (inc (Integer/parseInt (re-find #"\d+" (slurp "/sys/class/gpio/gpiochip0/ngpio")))) nil))))
+
+(def output-streams (make-array java.io.BufferedOutputStream 
+                                (inc (Integer/parseInt (re-find #"\d+" (slurp "/sys/class/gpio/gpiochip0/ngpio"))))))
 
 (defn ^:private pin-from-file
   "Converts the full /sys/class/gpio filename for a value file to the corresponding pin number"
@@ -16,34 +17,34 @@
       (Integer/parseInt (subs (last (butlast file)) 4)))))
 
 (defn ^:private value-file
-  "Converts the pin number to corresponding file in under /sys/class/gpio"
+  "Converts the pin number to corresponding file under /sys/class/gpio"
   [pin]
   (str "/sys/class/gpio/gpio" pin "/value"))
 
 (defn ^:private active-low-file
-  "Converts the pin number to corresponding file in under /sys/class/gpio"
+  "Converts the pin number to corresponding file under /sys/class/gpio"
   [pin]
   (str "/sys/class/gpio/gpio" pin "/active_low"))
 
 (defn ^:private direction-file
-  "Converts the pin number to corresponding file in under /sys/class/gpio"
+  "Converts the pin number to corresponding file under /sys/class/gpio"
   [pin]
   (str "/sys/class/gpio/gpio" pin "/direction"))
 
 (defn ^:private edge-file
-  "Converts the pin number to corresponding file in under /sys/class/gpio"
+  "Converts the pin number to corresponding file under /sys/class/gpio"
   [pin]
   (str "/sys/class/gpio/gpio" pin "/edge"))
 
 (defn ^:private temperature-sensor-file
-  "Converts sensor ID to corresponding file in under /sys/bus/w1/devices/"
+  "Converts sensor ID to corresponding file under /sys/bus/w1/devices/"
   [sensor]
   (str "/sys/bus/w1/devices/" sensor "/w1_slave"))
 
 (defn ^:private writeable?
   "Checks if all supplied files are writable"
   [& files]
-  (reduce #(and %1 %2) (map #(.canWrite (File. %)) files)))
+  (reduce #(and %1 %2) (map #(.canWrite (File. ^String %)) files)))
 
 (defn ^:private all-files-writeable?
   "Checks if active_low, direction and value are writeable for supplied pin"
@@ -56,26 +57,28 @@
 (defn ^:private create-value-stream
   "Creates an output-stream for the value file."
   [pin]
-  (when (nil? (nth @output-streams pin))
-    (swap! output-streams assoc pin (clojure.java.io/output-stream (java.io.File. (value-file pin)))))
+  (when (nil? (aget ^"[Ljava.io.BufferedOutputStream;" output-streams ^long pin))
+    (aset ^"[Ljava.io.BufferedOutputStream;" output-streams pin (clojure.java.io/output-stream (java.io.File. ^String (value-file pin)))))
   pin)
 
 (defn ^:private destroy-value-stream
   "If an output-stream do exist for the value file, it will get destroyed from the stream map."
   [pin]
-  (when-not (nil? (nth @output-streams pin))
-    (.close (nth @output-streams pin))
-    (swap! output-streams assoc  pin nil))
-  pin)
+  (let [^java.io.BufferedOutputStream stream (aget ^"[Ljava.io.BufferedOutputStream;" output-streams pin)]
+    (when-not (nil? stream)
+      (.close stream)
+      (aset ^"[Ljava.io.BufferedOutputStream;" output-streams pin nil))
+    pin))
 
 (defn wait 
   "Wait as many milliseconds as given"
-  [ms]
-  (if (< ms 10)
-    (let [stop-time (+ ms (System/currentTimeMillis))]
-      (loop []
-        (when (> stop-time (System/currentTimeMillis)) (recur))))
-    (Thread/sleep ms)))
+  [^long ms]
+  (when-not (zero? ms)
+    (if (< ms 10)
+      (let [stop-time (+ ms (System/currentTimeMillis))]
+        (loop []
+          (when (> stop-time (System/currentTimeMillis)) (recur))))
+      (Thread/sleep ms))))
 
 (defn open-pin 
   "Exports pin for usage and returns the pin number."
@@ -122,7 +125,7 @@
   "Sets the direction of the pin. Use :in or :out for direction."
   [pin direction]
   (let [file (direction-file pin)]
-    (when (or (not (writeable? file)) (nil? (nth @output-streams pin)))
+    (when (or (not (writeable? file)) (nil? (aget ^"[Ljava.io.BufferedOutputStream;" output-streams pin)))
       (open-pin pin))
     (if (= direction :in)
       (spit file "in")
@@ -138,12 +141,12 @@
 
 (defn write-value
   "Converts true to 1 and false to 0 and writes it to the pin."
-  [pin value]
-  (let [stream (nth @output-streams pin)]
+  [^long pin value]
+  (let [^java.io.BufferedOutputStream stream (aget ^"[Ljava.io.BufferedOutputStream;" output-streams pin)]
     (if value
-      (.write stream (.getBytes "1\n")) 
-      (.write stream (.getBytes "0\n"))) 
-    (.flush stream))
+      (.write ^java.io.BufferedOutputStream stream (.getBytes "1\n")) 
+      (.write ^java.io.BufferedOutputStream stream (.getBytes "0\n"))) 
+    (.flush ^java.io.BufferedOutputStream stream))
   value)
 
 (defn write-multiple-values
@@ -188,7 +191,7 @@
               value-event (loop [events all-events]
                             (cond 
                               (zero? (count events)) nil
-                              (= "value" (.getName (.toFile (.resolve (.watchable k) (.context (first events)))))) (pin-from-file (.getCanonicalPath (.toFile (.resolve (.watchable k) (.context (first events))))))
+                              (= "value" (.getName ^java.io.File (.toFile ^java.nio.file.Path (.resolve (.watchable k)  (.context ^java.nio.file.WatchEvent (first events)))))) (pin-from-file (.getCanonicalPath ^java.io.File (.toFile ^java.nio.file.Path (.resolve  (.watchable k) (.context ^java.nio.file.WatchEvent (first events))))))
                               :else (recur (rest events))))]
           (.reset k)
           (recur (not (nil? value-event)) value-event))))))
@@ -200,8 +203,8 @@
        (File.)
        (.listFiles)
        (seq)
-       (map #(.getName %)) 
-       (filter #(.startsWith % "28"))))
+       (map #(.getName ^java.io.File %)) 
+       (filter #(.startsWith ^String % "28"))))
 
 (defn read-temperature
   "Reads temperature from DS18B20 sensors and returns the temperature in C"
@@ -227,22 +230,22 @@
 
 (defn inactivate-stepper-motor
   "Turns off all output to the stepper motor by writing false to all pins"
-  [{pins :pins}]
+  [{^clojure.lang.PersistentVector pins :pins}]
   (write-multiple-values pins (map (fn [_] false) pins)))
 
 (defn turn-stepper-motor
   "Turn the motor as many steps you want. Positive steps move the motor forward and negative steps backwards. The step-time is the time in ms to wait between each step."
-  [{stepper-sequence :sequence position :position pins :pins} steps step-time]
+  [{^clojure.lang.PersistentVector stepper-sequence :sequence ^clojure.lang.Atom position :position ^clojure.lang.PersistentVector pins :pins} ^long steps ^long step-time]
   (let [forward (pos? steps)
         sequence-length (count stepper-sequence)]
     (dosync
-     (dotimes [_ (Math/abs steps)]
-       (let [new-position (mod (if forward
-                                 (inc @position)
-                                 (dec @position))
-                               sequence-length)]
-         (write-multiple-values pins (nth stepper-sequence new-position))
-         (ref-set position new-position)
-         (wait step-time)))
-     @position)))
+      (dotimes [_ (Math/abs steps)]
+        (let [new-position (mod (if forward
+                                  (inc @position)
+                                  (dec @position))
+                                sequence-length)]
+          (write-multiple-values pins (nth stepper-sequence new-position))
+          (ref-set position new-position)
+          (wait step-time)))
+      @position)))
 
