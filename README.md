@@ -150,6 +150,6 @@ The example below should be pretty much self-explaining.
 
 ## License
 
-Copyright © 2018 Lars Engblom
+Copyright © 2019 Lars Engblom
 
 Distributed under the Eclipse Public License either version 1.0 or any later version.
