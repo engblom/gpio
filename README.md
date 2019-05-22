@@ -26,7 +26,7 @@ As a side effect to this function, the pin number provided will be exported for 
 (set-direction pin direction)
 ````
 
-The direction is given by either `:in` or `:out`. This function will return the pin number. For example `(set-direction 4 :out)` will set GPIO4 to :out and return 4. If the pin is not already opened, it will get opened before setting the direction.
+The direction is given by either `:in` or `:out`. This function will return the pin number. For example `(set-direction 4 :out)` will set GPIO4 to `:out` and return `4`. If the pin is not already opened, it will get opened before setting the direction.
 
 ### Reading value
 
@@ -85,7 +85,7 @@ For example `(wait-for-input 4)` will stop the execution of the current function
 ````
 
 These are the values `(set-edge pin value)` is able to take: `:rising`, `:falling`, `:both` and `:none`.
-`:rising` will cause (wait-for-input pin1 pin2 pin3 ...) to block until one of the pins goes from `false` to `true`, `:falling` will cause a block until one of the pins goes from `true` to `false`.
+`:rising` will cause `(wait-for-input pin1 pin2 pin3 ...)` to block until one of the pins goes from `false` to `true`, `:falling` will cause a block until one of the pins goes from `true` to `false`.
 
 ````
 (get-edge pin)
