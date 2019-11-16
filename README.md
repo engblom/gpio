@@ -26,7 +26,7 @@ As a side effect to this function, the `pin` number provided will be exported fo
 (close-pin pin)
 ````
 
-As a side effect to this function, the `pin` number provided will be unexported. This function will always return the same value as given to it. For example `(close-pin 4)` will uexport GPIO4 and will also return `4`. If the `pin` is already closed, this function will only return the `pin`.
+As a side effect to this function, the `pin` number provided will be unexported. This function will always return the same value as given to it. For example `(close-pin 4)` will unexport GPIO4 and will also return `4`. If the `pin` is already closed, this function will only return the `pin`.
 
 ### Setting the direction of a pin
 
