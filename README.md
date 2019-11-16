@@ -20,7 +20,7 @@ Any functions asking for `pin` wants the Broadcom GPIO number.
 
 As a side effect to this function, the `pin` number provided will be exported for use. This function will always return the same value as given to it. For example `(open-pin 4)` will export GPIO4 and will also return `4`. If the `pin` is already exported, this function will only return the `pin`.
 
-### Opening a pin for use
+### Closing a pin
 
 ````
 (close-pin pin)
