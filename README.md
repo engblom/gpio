@@ -6,7 +6,7 @@ Most functionality is done, but there surely is room for improvements. Feel free
 
 ## Usage
 
-If you use leingingen, add gpio as a dependency:
+If you use leiningen, add gpio as a dependency:
 
 [![Clojars Project](https://img.shields.io/clojars/v/gpio.svg)](https://clojars.org/gpio)
 
@@ -18,7 +18,15 @@ Any functions asking for `pin` wants the Broadcom GPIO number.
 (open-pin pin)
 ````
 
-As a side effect to this function, the pin number provided will be exported for use. This function will always return the same value as given to it. For example `(open-pin 4)` will export GPIO4 and will also return `4`. If the pin is already exported, this function will only return the pin.
+As a side effect to this function, the `pin` number provided will be exported for use. This function will always return the same value as given to it. For example `(open-pin 4)` will export GPIO4 and will also return `4`. If the `pin` is already exported, this function will only return the `pin`.
+
+### Opening a pin for use
+
+````
+(close-pin pin)
+````
+
+As a side effect to this function, the `pin` number provided will be unexported. This function will always return the same value as given to it. For example `(close-pin 4)` will uexport GPIO4 and will also return `4`. If the `pin` is already closed, this function will only return the `pin`.
 
 ### Setting the direction of a pin
 
